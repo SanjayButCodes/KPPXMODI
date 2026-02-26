@@ -8,11 +8,8 @@
 <style>
 * { box-sizing: border-box; font-family: Arial, sans-serif; }
 
-:root {
-  --footer-height: 56px;
-}
+:root { --footer-height: 56px; }
 
-/* ===== BODY ===== */
 body {
   margin: 0;
   height: 100vh;
@@ -24,9 +21,7 @@ body {
 /* ===== SCREENS ===== */
 .screen {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  inset: 0;
   bottom: var(--footer-height);
   display: flex;
   flex-direction: column;
@@ -36,16 +31,15 @@ body {
   opacity: 0;
   pointer-events: none;
   transform: scale(0.92);
-  transition: all 0.45s ease;
+  transition: 0.45s ease;
 }
-
 .screen.active {
   opacity: 1;
   pointer-events: auto;
   transform: scale(1);
 }
 
-/* ===== TITLES ===== */
+/* ===== TITLE ===== */
 h1 {
   font-size: 42px;
   letter-spacing: 2px;
@@ -59,7 +53,6 @@ h1 {
   box-shadow: 0 0 30px rgba(0,255,255,0.6);
   animation: float 3s ease-in-out infinite;
 }
-
 @keyframes float {
   0% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
@@ -78,7 +71,6 @@ button {
   box-shadow: 0 0 12px rgba(0,255,255,0.4);
   transition: 0.25s ease;
 }
-
 button:hover {
   background: rgba(0,255,255,0.2);
   box-shadow: 0 0 22px rgba(0,255,255,0.9);
@@ -93,6 +85,7 @@ input {
   border: 1px solid #00f7ff;
   background: rgba(0,0,0,0.6);
   color: #9ffcff;
+  outline: none;
 }
 
 /* ===== CANVAS ===== */
@@ -120,12 +113,9 @@ canvas {
   background: rgba(0,0,0,0.85);
   border-top: 1px solid #00f7ff;
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 10px;
-  z-index: 10;
+  align-items: center;
 }
-
 #footer a {
   display: flex;
   align-items: center;
@@ -133,16 +123,12 @@ canvas {
   color: #9ffcff;
   text-decoration: none;
   font-size: 14px;
-  letter-spacing: 1px;
   opacity: 0.85;
-  transition: 0.25s ease;
 }
-
 #footer a:hover {
   opacity: 1;
   text-shadow: 0 0 10px #00f7ff;
 }
-
 #footer img {
   height: 22px;
   filter: drop-shadow(0 0 6px #00f7ff);
@@ -155,7 +141,8 @@ canvas {
 <!-- ===== MENU ===== -->
 <div id="menu" class="screen active">
   <h1>KPPXMODI</h1>
-  <img id="poster" src="poster.png" alt="Game Poster">
+  <img id="poster" src="Gemini_Generated_Image_2zcwgs2zcwgs2zcw.png" alt="Game Poster"
+       onerror="this.style.display='none'">
   <button onclick="goName()">▶ Play</button>
   <button onclick="goLeaderboard()">🏆 Leaderboard</button>
 </div>
@@ -177,7 +164,6 @@ canvas {
 <!-- ===== GAME ===== -->
 <div id="gameScreen" class="screen">
   <canvas id="game" width="400" height="600"></canvas>
-
   <div id="gameOverUI">
     <button onclick="restartGame()">🔁 Restart</button>
     <button onclick="goMenu()">🏠 Main Menu</button>
@@ -192,19 +178,15 @@ canvas {
   </a>
 </div>
 
-<!-- ===== SCRIPT ===== -->
 <script>
-/* ===== SCREENS ===== */
+/* ===== SCREEN NAV ===== */
 const screens = { menu, name:nameScreen, leaderboard:leaderboardScreen, game:gameScreen };
-function show(s){
-  Object.values(screens).forEach(sc=>sc.classList.remove("active"));
-  screens[s].classList.add("active");
-}
+function show(s){ Object.values(screens).forEach(sc=>sc.classList.remove("active")); screens[s].classList.add("active"); }
 function goMenu(){ show("menu"); }
 function goName(){ show("name"); }
 function goLeaderboard(){ renderLeaderboard(); show("leaderboard"); }
 
-/* ===== PLAYER ===== */
+/* ===== PLAYER / LEADERBOARD ===== */
 let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
 let playerName="", playerHighScore=0;
 
@@ -220,13 +202,10 @@ const dieSound=new Audio("die.mp3");
 let currentSound=null;
 
 /* ===== GAME VARS ===== */
-let bird,pipes,frame,score,gameOver=false;
-let easterEggTriggered=false;
-
-/* ===== CANVAS ===== */
+let bird,pipes,frame,score,gameOver=false,easterEgg=false;
 const canvas=game, ctx=canvas.getContext("2d");
 
-/* ===== GAME FLOW ===== */
+/* ===== START GAME ===== */
 function startGame(){
   const n=nameInput.value.trim();
   if(!n) return;
@@ -241,8 +220,7 @@ function startGame(){
 function resetGame(){
   bird={x:80,y:250,w:40,h:40,velocity:0,gravity:0.4,lift:-8,rotation:0};
   pipes=[]; frame=0; score=0;
-  gameOver=false;
-  easterEggTriggered=false;
+  gameOver=false; easterEgg=false;
 }
 
 function restartGame(){
@@ -283,17 +261,13 @@ function saveScore(){
   localStorage.setItem("leaderboard",JSON.stringify(leaderboard));
   playerHighScore=Math.max(playerHighScore,score);
 }
-
 function renderLeaderboard(){
-  leaderboardList.innerHTML=leaderboard.map(
-    (e,i)=>`<div>${i+1}. ${e.name} — ${e.score}</div>`
-  ).join("");
+  leaderboardList.innerHTML=leaderboard.map((e,i)=>`<div>${i+1}. ${e.name} — ${e.score}</div>`).join("");
 }
 
-/* ===== UPDATE ===== */
+/* ===== UPDATE / DRAW ===== */
 function update(){
   if(gameOver||!screens.game.classList.contains("active")) return;
-
   bird.velocity+=bird.gravity;
   bird.velocity*=0.98;
   bird.y+=bird.velocity;
@@ -304,54 +278,39 @@ function update(){
 
   pipes.forEach(p=>{
     p.x-=1.6;
-
     if(!p.passed && p.x+p.w<bird.x){
       score++; p.passed=true;
-
-      // 🥚 Easter Egg at score 5
-      if(score===5 && !easterEggTriggered){
-        easterEggTriggered=true;
-        gameOver=true;
+      if(score===5 && !easterEgg){
+        easterEgg=true; gameOver=true;
         playSound(dieSound,true);
-        saveScore();
-        gameOverUI.style.display="flex";
+        saveScore(); gameOverUI.style.display="flex";
       }
     }
-
     if(bird.x<p.x+p.w&&bird.x+bird.w>p.x&&(bird.y<p.top||bird.y+bird.h>p.bottom)){
       gameOver=true;
       playSound(dieSound,true);
-      saveScore();
-      gameOverUI.style.display="flex";
+      saveScore(); gameOverUI.style.display="flex";
     }
   });
 }
 
-/* ===== DRAW ===== */
 function draw(){
   if(!screens.game.classList.contains("active")) return;
   ctx.clearRect(0,0,400,600);
-
   pipes.forEach(p=>{
     ctx.drawImage(pipeImg,p.x,0,p.w,p.top);
     ctx.drawImage(pipeImg,p.x,p.bottom,p.w,600);
   });
-
   ctx.save();
   ctx.translate(bird.x+20,bird.y+20);
   ctx.rotate(bird.rotation);
   ctx.drawImage(birdImg,-20,-20,40,40);
   ctx.restore();
-
   ctx.fillStyle="#fff";
   ctx.font="18px Arial";
   ctx.fillText(`Score: ${score} | High: ${playerHighScore}`,12,24);
-
-  if(easterEggTriggered){
-    ctx.drawImage(jobImg,40,120,320,360);
-  } else if(gameOver){
-    ctx.drawImage(deathImg,50,200,300,200);
-  }
+  if(easterEgg) ctx.drawImage(jobImg,40,120,320,360);
+  else if(gameOver) ctx.drawImage(deathImg,50,200,300,200);
 }
 
 function loop(){ update(); draw(); requestAnimationFrame(loop); }
