@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Flappy Bird Final</title>
+<title>Flappy Bird</title>
 
 <style>
   body {
@@ -14,72 +14,82 @@
     align-items: center;
     height: 100vh;
     touch-action: manipulation;
+    font-family: Arial, sans-serif;
   }
   canvas {
     background: #70c5ce;
+  }
+  #github {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
   }
 </style>
 </head>
 
 <body>
+
 <canvas id="game" width="400" height="600"></canvas>
+<a id="github" href="https://github.com/SanjayButCodes" target="_blank">GitHub</a>
 
 <script>
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-/* ========= ASSETS ========= */
-const birdImg = new Image();
-birdImg.src = "bird.png";
+// ===== PLAYER NAME =====
+let playerName = localStorage.getItem("playerName");
+if (!playerName) {
+  playerName = prompt("Enter your name") || "Player";
+  localStorage.setItem("playerName", playerName);
+}
 
-const pipeImg = new Image();
-pipeImg.src = "pillar.png";
+// ===== LEADERBOARD =====
+let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
 
-const deathImg = new Image();
-deathImg.src = "death.png";
+// ===== IMAGES =====
+const birdImg = new Image(); birdImg.src = "bird.png";
+const pipeImg = new Image(); pipeImg.src = "pillar.png";
+const deathImg = new Image(); deathImg.src = "death.png";
 
-/* ========= AUDIO ========= */
+// ===== AUDIO =====
 const flapSound = new Audio("click.mp3");
 const dieSound  = new Audio("die.mp3");
 
-/* Mobile audio unlock */
+// Mobile unlock
 document.body.addEventListener("touchstart", () => {
   flapSound.play().then(() => flapSound.pause());
   dieSound.play().then(() => dieSound.pause());
 }, { once: true });
 
-/* ========= AUDIO CONTROL ========= */
+// ===== AUDIO SYSTEM =====
 let currentSound = null;
-let restartQueued = false;
+let restartPending = false;
 
-function playSound(sound, force = false) {
+function playSound(sound, force=false) {
   if (currentSound && !force) return;
-
   if (currentSound && force) {
     currentSound.pause();
     currentSound.currentTime = 0;
   }
-
   currentSound = sound;
   sound.currentTime = 0;
   sound.play();
-
   sound.onended = () => {
     if (currentSound === sound) {
       currentSound = null;
-      if (restartQueued) location.reload();
+      if (restartPending) location.reload();
     }
   };
 }
 
-/* ========= GAME STATE ========= */
+// ===== GAME STATE =====
 let bird = {
-  x: 80,
-  y: 250,
-  w: 40,
-  h: 40,
+  x: 80, y: 250, w: 40, h: 40,
   velocity: 0,
-  gravity: 0.4,   // easy mode
+  gravity: 0.4,
   lift: -8,
   rotation: 0
 };
@@ -89,26 +99,20 @@ let frame = 0;
 let score = 0;
 let gameOver = false;
 
-/* ========= INPUT ========= */
+// ===== CONTROLS =====
 function flap() {
   if (!gameOver) {
     bird.velocity = bird.lift;
     playSound(flapSound);
   } else {
-    if (currentSound === dieSound) {
-      restartQueued = true;
-    } else {
-      location.reload();
-    }
+    if (currentSound === dieSound) restartPending = true;
+    else location.reload();
   }
 }
-
 document.addEventListener("click", flap);
-document.addEventListener("keydown", e => {
-  if (e.code === "Space") flap();
-});
+document.addEventListener("keydown", e => e.code === "Space" && flap());
 
-/* ========= PIPES ========= */
+// ===== PIPES =====
 function addPipe() {
   const gap = 190;
   const top = Math.random() * 220 + 60;
@@ -121,14 +125,13 @@ function addPipe() {
   });
 }
 
-/* ========= GAME LOGIC ========= */
+// ===== GAME LOGIC =====
 function update() {
   if (gameOver) return;
 
   bird.velocity += bird.gravity;
   bird.velocity *= 0.98;
   bird.y += bird.velocity;
-
   bird.rotation = Math.min(Math.max(bird.velocity * 0.05, -0.5), 1);
 
   if (frame % 110 === 0) addPipe();
@@ -136,7 +139,6 @@ function update() {
 
   pipes.forEach(p => {
     p.x -= 1.6;
-
     if (
       bird.x < p.x + p.w &&
       bird.x + bird.w > p.x &&
@@ -149,18 +151,25 @@ function update() {
     }
   });
 
-  if (bird.y + bird.h > canvas.height || bird.y < 0) {
-    endGame();
-  }
+  if (bird.y + bird.h > canvas.height || bird.y < 0) endGame();
 }
 
 function endGame() {
   if (gameOver) return;
   gameOver = true;
   playSound(dieSound, true);
+  saveScore();
 }
 
-/* ========= DRAW ========= */
+// ===== SAVE SCORE =====
+function saveScore() {
+  leaderboard.push({ name: playerName, score });
+  leaderboard.sort((a,b) => b.score - a.score);
+  leaderboard = leaderboard.slice(0,5);
+  localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+}
+
+// ===== DRAW =====
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -170,23 +179,27 @@ function draw() {
   });
 
   ctx.save();
-  ctx.translate(bird.x + bird.w / 2, bird.y + bird.h / 2);
+  ctx.translate(bird.x + bird.w/2, bird.y + bird.h/2);
   ctx.rotate(bird.rotation);
-  ctx.drawImage(birdImg, -bird.w / 2, -bird.h / 2, bird.w, bird.h);
+  ctx.drawImage(birdImg, -bird.w/2, -bird.h/2, bird.w, bird.h);
   ctx.restore();
 
   ctx.fillStyle = "white";
-  ctx.font = "30px Arial";
+  ctx.font = "28px Arial";
   ctx.fillText(score, 20, 40);
 
   if (gameOver) {
-    ctx.drawImage(deathImg, 50, 200, 300, 200);
-    ctx.font = "20px Arial";
-    ctx.fillText("Tap to Restart", 130, 450);
+    ctx.drawImage(deathImg, 50, 180, 300, 200);
+    ctx.font = "18px Arial";
+    ctx.fillText("Leaderboard:", 130, 400);
+    leaderboard.forEach((e,i) => {
+      ctx.fillText(`${i+1}. ${e.name} - ${e.score}`, 110, 430 + i*22);
+    });
+    ctx.fillText("Tap to Restart", 130, 550);
   }
 }
 
-/* ========= LOOP ========= */
+// ===== LOOP =====
 function loop() {
   update();
   draw();
