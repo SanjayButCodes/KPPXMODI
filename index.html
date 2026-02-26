@@ -6,159 +6,138 @@
 <title>KPPXMODI</title>
 
 <style>
-* { box-sizing: border-box; font-family: Arial, sans-serif; }
+*{box-sizing:border-box;font-family:Arial,sans-serif}
+:root{--footer-height:56px}
 
-:root { --footer-height: 56px; }
-
-body {
-  margin: 0;
-  height: 100vh;
-  background: radial-gradient(circle at top, #0f2027, #000);
-  overflow: hidden;
-  color: #9ffcff;
-}
-
-/* ===== SCREENS ===== */
-.screen {
-  position: absolute;
-  inset: 0;
-  bottom: var(--footer-height);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 18px;
-  opacity: 0;
-  pointer-events: none;
-  transform: scale(0.92);
-  transition: 0.45s ease;
-}
-.screen.active {
-  opacity: 1;
-  pointer-events: auto;
-  transform: scale(1);
+body{
+  margin:0;
+  height:100vh;
+  background:radial-gradient(circle at top,#0f2027,#000);
+  color:#9ffcff;
+  overflow:hidden;
 }
 
-/* ===== TITLE ===== */
-h1 {
-  font-size: 42px;
-  letter-spacing: 2px;
-  text-shadow: 0 0 15px #00f7ff;
+.screen{
+  position:absolute;
+  inset:0;
+  bottom:var(--footer-height);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap:18px;
+  opacity:0;
+  pointer-events:none;
+  transform:scale(.92);
+  transition:.4s ease;
+}
+.screen.active{opacity:1;pointer-events:auto;transform:scale(1)}
+
+h1{font-size:42px;letter-spacing:2px;text-shadow:0 0 15px #00f7ff}
+
+#poster{
+  width:220px;
+  border-radius:12px;
+  box-shadow:0 0 30px rgba(0,255,255,.6);
+  animation:float 3s ease-in-out infinite;
+}
+@keyframes float{
+  0%{transform:translateY(0)}
+  50%{transform:translateY(-10px)}
+  100%{transform:translateY(0)}
 }
 
-/* ===== POSTER ===== */
-#poster {
-  width: 220px;
-  border-radius: 12px;
-  box-shadow: 0 0 30px rgba(0,255,255,0.6);
-  animation: float 3s ease-in-out infinite;
+button{
+  padding:14px 30px;
+  font-size:18px;
+  border-radius:8px;
+  border:1px solid #00f7ff;
+  background:rgba(0,255,255,.08);
+  color:#9ffcff;
+  cursor:pointer;
+  box-shadow:0 0 12px rgba(0,255,255,.4);
 }
-@keyframes float {
-  0% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0); }
-}
-
-/* ===== BUTTONS ===== */
-button {
-  padding: 14px 30px;
-  font-size: 18px;
-  border-radius: 8px;
-  border: 1px solid #00f7ff;
-  background: rgba(0,255,255,0.08);
-  color: #9ffcff;
-  cursor: pointer;
-  box-shadow: 0 0 12px rgba(0,255,255,0.4);
-}
-button:hover {
-  background: rgba(0,255,255,0.2);
-  box-shadow: 0 0 22px rgba(0,255,255,0.9);
-  transform: scale(1.05);
+button:hover{
+  background:rgba(0,255,255,.2);
+  box-shadow:0 0 22px rgba(0,255,255,.9);
+  transform:scale(1.05);
 }
 
-/* ===== INPUT ===== */
-input {
-  padding: 12px;
-  font-size: 18px;
-  border-radius: 6px;
-  border: 1px solid #00f7ff;
-  background: rgba(0,0,0,0.6);
-  color: #9ffcff;
+input{
+  padding:12px;
+  font-size:18px;
+  border-radius:6px;
+  border:1px solid #00f7ff;
+  background:rgba(0,0,0,.6);
+  color:#9ffcff;
 }
 
-/* ===== CANVAS ===== */
-canvas {
-  background: #70c5ce;
-  border-radius: 8px;
-  box-shadow: 0 0 25px rgba(0,255,255,0.5);
-  touch-action: manipulation;
+canvas{
+  background:#70c5ce;
+  border-radius:8px;
+  box-shadow:0 0 25px rgba(0,255,255,.5);
+  touch-action:manipulation;
 }
 
-/* ===== GAME OVER UI ===== */
-#gameOverUI {
-  margin-top: 14px;
-  display: none;
-  flex-direction: column;
-  gap: 12px;
+#gameOverUI{
+  display:none;
+  margin-top:14px;
+  gap:12px;
+  flex-direction:column;
 }
 
-/* ===== FOOTER ===== */
-#footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: var(--footer-height);
-  background: rgba(0,0,0,0.85);
-  border-top: 1px solid #00f7ff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  touch-action: manipulation;
+#footer{
+  position:fixed;
+  bottom:0;left:0;right:0;
+  height:var(--footer-height);
+  background:rgba(0,0,0,.85);
+  border-top:1px solid #00f7ff;
+  display:flex;
+  justify-content:center;
+  align-items:center;
 }
-#footer a {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #9ffcff;
-  text-decoration: none;
-  font-size: 14px;
+#footer a{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:#9ffcff;
+  text-decoration:none;
+  font-size:14px;
 }
-#footer img {
-  height: 22px;
-  filter: drop-shadow(0 0 6px #00f7ff);
+#footer img{
+  height:22px;
+  filter:drop-shadow(0 0 6px #00f7ff);
 }
 </style>
 </head>
 
 <body>
 
-<!-- ===== MENU ===== -->
+<!-- MENU -->
 <div id="menu" class="screen active">
   <h1>KPPXMODI</h1>
   <img id="poster"
        src="Gemini_Generated_Image_2zcwgs2zcwgs2zcw.png"
-       alt="Game Poster"
        onerror="this.style.display='none'">
   <button onclick="goName()">▶ Play</button>
   <button onclick="goLeaderboard()">🏆 Leaderboard</button>
 </div>
 
-<!-- ===== NAME ===== -->
+<!-- NAME -->
 <div id="nameScreen" class="screen">
   <h1>Enter Pilot Name</h1>
   <input id="nameInput" placeholder="Your name">
   <button onclick="startGame()">Launch</button>
 </div>
 
-<!-- ===== LEADERBOARD ===== -->
+<!-- LEADERBOARD -->
 <div id="leaderboardScreen" class="screen">
   <h1>Leaderboard</h1>
   <div id="leaderboardList"></div>
   <button onclick="goMenu()">⬅ Back</button>
 </div>
 
-<!-- ===== GAME ===== -->
+<!-- GAME -->
 <div id="gameScreen" class="screen">
   <canvas id="game" width="400" height="600"></canvas>
   <div id="gameOverUI">
@@ -167,167 +146,178 @@ canvas {
   </div>
 </div>
 
-<!-- ===== FOOTER ===== -->
+<!-- FOOTER -->
 <div id="footer">
   <a href="https://github.com/SanjayButCodes" target="_blank">
-    <img src="github.png" alt="GitHub">
+    <img src="github.png">
     <span>SanjayButCodes</span>
   </a>
 </div>
 
 <script>
-/* ===== SCREEN NAV ===== */
-const screens = { menu, name:nameScreen, leaderboard:leaderboardScreen, game:gameScreen };
-function show(s){ Object.values(screens).forEach(sc=>sc.classList.remove("active")); screens[s].classList.add("active"); }
-function goMenu(){ show("menu"); }
-function goName(){ show("name"); }
-function goLeaderboard(){ renderLeaderboard(); show("leaderboard"); }
+/* ===== NAV ===== */
+const screens={menu,name:nameScreen,leaderboard:leaderboardScreen,game:gameScreen}
+function show(s){Object.values(screens).forEach(x=>x.classList.remove("active"));screens[s].classList.add("active")}
+const goMenu=()=>show("menu")
+const goName=()=>show("name")
+const goLeaderboard=()=>{renderLeaderboard();show("leaderboard")}
 
-/* ===== LEADERBOARD ===== */
-let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
-let playerName="", playerHighScore=0;
+/* ===== FIXED LEADERBOARD ===== */
+const FIXED=[
+ {name:"modi",score:67690},
+ {name:"epstin",score:5000},
+ {name:"diddy",score:1000},
+ {name:"rahul ghandi",score:6}
+]
+
+let playerEntries=JSON.parse(localStorage.getItem("playerEntries"))||[]
+let playerName="",playerHighScore=0
 
 /* ===== ASSETS ===== */
-const birdImg=new Image(); birdImg.src="bird.png";
-const pipeImg=new Image(); pipeImg.src="pillar.png";
-const deathImg=new Image(); deathImg.src="death.png";
-const jobImg=new Image(); jobImg.src="job.png";
+const birdImg=new Image();birdImg.src="bird.png"
+const pipeImg=new Image();pipeImg.src="pillar.png"
+const deathImg=new Image();deathImg.src="death.png"
+const jobImg=new Image();jobImg.src="job.png"
 
-const flapSound=new Audio("click.mp3");
-const dieSound=new Audio("die.mp3");
-let currentSound=null;
+const flapSound=new Audio("click.mp3")
+const dieSound=new Audio("die.mp3")
+let currentSound=null
 
-/* ===== AUDIO UNLOCK (MOBILE FIX) ===== */
-let audioUnlocked=false;
-function unlockAudio(){
-  if(audioUnlocked) return;
-  [flapSound,dieSound].forEach(s=>{
-    s.play().then(()=>{s.pause();s.currentTime=0;}).catch(()=>{});
-  });
-  audioUnlocked=true;
-}
-document.addEventListener("pointerdown", unlockAudio, { once:true });
+/* ===== AUDIO UNLOCK ===== */
+let audioUnlocked=false
+document.addEventListener("pointerdown",()=>{
+  if(audioUnlocked) return
+  ;[flapSound,dieSound].forEach(s=>{
+    s.play().then(()=>{s.pause();s.currentTime=0}).catch(()=>{})
+  })
+  audioUnlocked=true
+},{once:true})
 
 /* ===== GAME VARS ===== */
-let bird,pipes,frame,score,gameOver=false,easterEgg=false;
-const canvas=game, ctx=canvas.getContext("2d");
+const canvas=game,ctx=canvas.getContext("2d")
+let bird,pipes,frame,score,gameOver=false,easterEgg=false
 
-/* ===== GAME START ===== */
 function startGame(){
-  const n=nameInput.value.trim();
-  if(!n) return;
-  playerName=n;
-  const e=leaderboard.find(x=>x.name===n);
-  playerHighScore=e?e.score:0;
-  resetGame();
-  gameOverUI.style.display="none";
-  show("game");
+  const n=nameInput.value.trim()
+  if(!n) return
+  playerName=n
+  const e=playerEntries.find(x=>x.name===n)
+  playerHighScore=e?e.score:0
+  resetGame()
+  gameOverUI.style.display="none"
+  show("game")
 }
 
 function resetGame(){
-  bird={x:80,y:250,w:40,h:40,velocity:0,gravity:0.4,lift:-8,rotation:0};
-  pipes=[]; frame=0; score=0;
-  gameOver=false; easterEgg=false;
+  bird={x:80,y:250,w:40,h:40,velocity:0,gravity:.4,lift:-8,rotation:0}
+  pipes=[];frame=0;score=0
+  gameOver=false;easterEgg=false
 }
 
 function restartGame(){
-  if(currentSound===dieSound) return;
-  resetGame();
-  gameOverUI.style.display="none";
+  if(currentSound===dieSound) return
+  resetGame()
+  gameOverUI.style.display="none"
 }
 
-/* ===== INPUT (CANVAS ONLY) ===== */
+/* INPUT */
 canvas.addEventListener("pointerdown",()=>{
-  if(!gameOver && screens.game.classList.contains("active")){
-    bird.velocity=bird.lift;
-    playSound(flapSound);
+  if(!gameOver&&screens.game.classList.contains("active")){
+    bird.velocity=bird.lift
+    playSound(flapSound)
   }
-});
+})
 
-/* ===== AUDIO ===== */
 function playSound(s,f=false){
-  if(currentSound&&!f) return;
-  if(currentSound&&f) currentSound.pause();
-  currentSound=s; s.currentTime=0; s.play();
-  s.onended=()=>currentSound=null;
+  if(currentSound&&!f) return
+  if(currentSound&&f) currentSound.pause()
+  currentSound=s;s.currentTime=0;s.play()
+  s.onended=()=>currentSound=null
 }
 
-/* ===== PIPES ===== */
+/* PIPES */
 function addPipe(){
-  const gap=190, top=Math.random()*220+60;
-  pipes.push({x:400,top,bottom:top+gap,w:60,passed:false});
+  const gap=190,top=Math.random()*220+60
+  pipes.push({x:400,top,bottom:top+gap,w:60,passed:false})
 }
 
-/* ===== SAVE SCORE ===== */
+/* SAVE SCORE */
 function saveScore(){
-  const e=leaderboard.find(x=>x.name===playerName);
-  if(e){ if(score>e.score) e.score=score; }
-  else leaderboard.push({name:playerName,score});
-  leaderboard.sort((a,b)=>b.score-a.score);
-  leaderboard=leaderboard.slice(0,5);
-  localStorage.setItem("leaderboard",JSON.stringify(leaderboard));
-  playerHighScore=Math.max(playerHighScore,score);
+  const e=playerEntries.find(x=>x.name===playerName)
+  if(e){if(score>e.score)e.score=score}
+  else playerEntries.push({name:playerName,score})
+  localStorage.setItem("playerEntries",JSON.stringify(playerEntries))
+  playerHighScore=Math.max(playerHighScore,score)
 }
+
+/* RENDER LEADERBOARD (FIXED ALWAYS) */
 function renderLeaderboard(){
-  leaderboardList.innerHTML=leaderboard.map((e,i)=>`<div>${i+1}. ${e.name} — ${e.score}</div>`).join("");
+  let rows=[...FIXED]
+  const p=playerEntries.find(x=>x.name===playerName)
+  if(p) rows.push(p)
+  rows=rows.slice(0,5)
+
+  leaderboardList.innerHTML=rows.map((e,i)=>`
+    <div style="${i<4?'opacity:.85':'color:#00f7ff;font-weight:bold'}">
+      ${i+1}. ${e.name} — ${e.score}${i<4?' 🔒':''}
+    </div>
+  `).join("")
 }
 
-/* ===== UPDATE ===== */
+/* UPDATE */
 function update(){
-  if(gameOver||!screens.game.classList.contains("active")) return;
+  if(gameOver||!screens.game.classList.contains("active")) return
+  bird.velocity+=bird.gravity
+  bird.velocity*=.98
+  bird.y+=bird.velocity
+  bird.rotation=Math.min(Math.max(bird.velocity*.05,-.5),1)
 
-  bird.velocity+=bird.gravity;
-  bird.velocity*=0.98;
-  bird.y+=bird.velocity;
-  bird.rotation=Math.min(Math.max(bird.velocity*0.05,-0.5),1);
-
-  if(frame%110===0) addPipe();
-  frame++;
+  if(frame++%110===0) addPipe()
 
   pipes.forEach(p=>{
-    p.x-=1.6;
-    if(!p.passed && p.x+p.w<bird.x){
-      score++; p.passed=true;
-      if(score===5 && !easterEgg){
-        easterEgg=true; gameOver=true;
-        playSound(dieSound,true);
-        saveScore(); gameOverUI.style.display="flex";
+    p.x-=1.6
+    if(!p.passed&&p.x+p.w<bird.x){
+      score++;p.passed=true
+      if(score===5&&!easterEgg){
+        easterEgg=true;gameOver=true
+        playSound(dieSound,true)
+        saveScore();gameOverUI.style.display="flex"
       }
     }
     if(bird.x<p.x+p.w&&bird.x+bird.w>p.x&&(bird.y<p.top||bird.y+bird.h>p.bottom)){
-      gameOver=true;
-      playSound(dieSound,true);
-      saveScore(); gameOverUI.style.display="flex";
+      gameOver=true
+      playSound(dieSound,true)
+      saveScore();gameOverUI.style.display="flex"
     }
-  });
+  })
 }
 
-/* ===== DRAW ===== */
+/* DRAW */
 function draw(){
-  if(!screens.game.classList.contains("active")) return;
-  ctx.clearRect(0,0,400,600);
+  if(!screens.game.classList.contains("active")) return
+  ctx.clearRect(0,0,400,600)
 
   pipes.forEach(p=>{
-    ctx.drawImage(pipeImg,p.x,0,p.w,p.top);
-    ctx.drawImage(pipeImg,p.x,p.bottom,p.w,600);
-  });
+    ctx.drawImage(pipeImg,p.x,0,p.w,p.top)
+    ctx.drawImage(pipeImg,p.x,p.bottom,p.w,600)
+  })
 
-  ctx.save();
-  ctx.translate(bird.x+20,bird.y+20);
-  ctx.rotate(bird.rotation);
-  ctx.drawImage(birdImg,-20,-20,40,40);
-  ctx.restore();
+  ctx.save()
+  ctx.translate(bird.x+20,bird.y+20)
+  ctx.rotate(bird.rotation)
+  ctx.drawImage(birdImg,-20,-20,40,40)
+  ctx.restore()
 
-  ctx.fillStyle="#fff";
-  ctx.font="18px Arial";
-  ctx.fillText(`Score: ${score} | High: ${playerHighScore}`,12,24);
+  ctx.fillStyle="#fff"
+  ctx.font="18px Arial"
+  ctx.fillText(`Score: ${score} | High: ${playerHighScore}`,12,24)
 
-  if(easterEgg) ctx.drawImage(jobImg,40,120,320,360);
-  else if(gameOver) ctx.drawImage(deathImg,50,200,300,200);
+  if(easterEgg) ctx.drawImage(jobImg,40,120,320,360)
+  else if(gameOver) ctx.drawImage(deathImg,50,200,300,200)
 }
 
-function loop(){ update(); draw(); requestAnimationFrame(loop); }
-loop();
+function loop(){update();draw();requestAnimationFrame(loop)}
+loop()
 </script>
 </body>
 </html>
