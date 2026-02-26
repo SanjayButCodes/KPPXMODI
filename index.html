@@ -8,26 +8,35 @@
 <style>
 * { box-sizing: border-box; font-family: Arial, sans-serif; }
 
-body {
-  margin: 0;
-  background: linear-gradient(135deg, #5dc7d8, #4aa3b3);
-  height: 100vh;
-  overflow: hidden;
-  color: white;
+:root {
+  --footer-height: 56px;
 }
 
+/* ===== BODY ===== */
+body {
+  margin: 0;
+  height: 100vh;
+  background: radial-gradient(circle at top, #0f2027, #000);
+  overflow: hidden;
+  color: #9ffcff;
+}
+
+/* ===== SCREENS ===== */
 .screen {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: var(--footer-height);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 20px;
+  gap: 18px;
   opacity: 0;
   pointer-events: none;
-  transform: scale(0.95);
-  transition: 0.4s ease;
+  transform: scale(0.92);
+  transition: all 0.45s ease;
 }
 
 .screen.active {
@@ -36,54 +45,126 @@ body {
   transform: scale(1);
 }
 
-h1 { font-size: 42px; }
-
-button {
-  padding: 14px 28px;
-  font-size: 18px;
-  border: none;
-  border-radius: 8px;
-  background: #ffcc00;
-  color: black;
-  cursor: pointer;
+/* ===== TITLES ===== */
+h1 {
+  font-size: 42px;
+  letter-spacing: 2px;
+  text-shadow: 0 0 15px #00f7ff;
 }
-button:hover { transform: scale(1.05); }
 
+/* ===== POSTER ===== */
+#poster {
+  width: 220px;
+  border-radius: 12px;
+  box-shadow: 0 0 30px rgba(0,255,255,0.6);
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0); }
+}
+
+/* ===== BUTTONS ===== */
+button {
+  padding: 14px 30px;
+  font-size: 18px;
+  border-radius: 8px;
+  border: 1px solid #00f7ff;
+  background: rgba(0,255,255,0.08);
+  color: #9ffcff;
+  cursor: pointer;
+  box-shadow: 0 0 12px rgba(0,255,255,0.4);
+  transition: 0.25s ease;
+}
+
+button:hover {
+  background: rgba(0,255,255,0.2);
+  box-shadow: 0 0 22px rgba(0,255,255,0.9);
+  transform: scale(1.05);
+}
+
+/* ===== INPUT ===== */
 input {
   padding: 12px;
   font-size: 18px;
   border-radius: 6px;
-  border: none;
-  width: 220px;
+  border: 1px solid #00f7ff;
+  background: rgba(0,0,0,0.6);
+  color: #9ffcff;
 }
 
-canvas { background: #70c5ce; }
+/* ===== CANVAS ===== */
+canvas {
+  background: #70c5ce;
+  border-radius: 8px;
+  box-shadow: 0 0 25px rgba(0,255,255,0.5);
+}
 
-#github {
+/* ===== GAME OVER UI ===== */
+#gameOverUI {
+  margin-top: 14px;
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ===== FOOTER ===== */
+#footer {
   position: fixed;
-  bottom: 10px;
-  right: 10px;
-  color: white;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--footer-height);
+  background: rgba(0,0,0,0.85);
+  border-top: 1px solid #00f7ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  z-index: 10;
+}
+
+#footer a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #9ffcff;
   text-decoration: none;
   font-size: 14px;
+  letter-spacing: 1px;
+  opacity: 0.85;
+  transition: 0.25s ease;
+}
+
+#footer a:hover {
+  opacity: 1;
+  text-shadow: 0 0 10px #00f7ff;
+}
+
+#footer img {
+  height: 22px;
+  filter: drop-shadow(0 0 6px #00f7ff);
 }
 </style>
 </head>
 
 <body>
 
-<!-- ===== MAIN MENU ===== -->
+<!-- ===== MENU ===== -->
 <div id="menu" class="screen active">
   <h1>KPPXMODI</h1>
+  <img id="poster" src="poster.png" alt="Game Poster">
   <button onclick="goName()">▶ Play</button>
   <button onclick="goLeaderboard()">🏆 Leaderboard</button>
 </div>
 
-<!-- ===== NAME INPUT ===== -->
+<!-- ===== NAME ===== -->
 <div id="nameScreen" class="screen">
-  <h1>Enter Name</h1>
+  <h1>Enter Pilot Name</h1>
   <input id="nameInput" placeholder="Your name">
-  <button onclick="startGame()">Start</button>
+  <button onclick="startGame()">Launch</button>
 </div>
 
 <!-- ===== LEADERBOARD ===== -->
@@ -97,17 +178,23 @@ canvas { background: #70c5ce; }
 <div id="gameScreen" class="screen">
   <canvas id="game" width="400" height="600"></canvas>
 
-  <!-- GAME OVER OPTIONS -->
-  <div id="gameOverUI" style="display:none; gap:14px; flex-direction:column;">
+  <div id="gameOverUI">
     <button onclick="restartGame()">🔁 Restart</button>
     <button onclick="goMenu()">🏠 Main Menu</button>
   </div>
 </div>
 
-<a id="github" href="https://github.com/SanjayButCodes" target="_blank">GitHub</a>
+<!-- ===== FOOTER ===== -->
+<div id="footer">
+  <a href="https://github.com/SanjayButCodes" target="_blank">
+    <img src="github.png" alt="GitHub">
+    <span>SanjayButCodes</span>
+  </a>
+</div>
 
+<!-- ===== SCRIPT ===== -->
 <script>
-/* ========== STATE / NAV ========== */
+/* ===== SCREENS ===== */
 const screens = { menu, name:nameScreen, leaderboard:leaderboardScreen, game:gameScreen };
 function show(s){
   Object.values(screens).forEach(sc=>sc.classList.remove("active"));
@@ -117,74 +204,45 @@ function goMenu(){ show("menu"); }
 function goName(){ show("name"); }
 function goLeaderboard(){ renderLeaderboard(); show("leaderboard"); }
 
-/* ========== NAME & SCORES ========== */
-let playerName = localStorage.getItem("playerName") || "";
+/* ===== PLAYER ===== */
 let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
-let playerHighScore = 0;
+let playerName="", playerHighScore=0;
 
+/* ===== IMAGES ===== */
+const birdImg=new Image(); birdImg.src="bird.png";
+const pipeImg=new Image(); pipeImg.src="pillar.png";
+const deathImg=new Image(); deathImg.src="death.png";
+const jobImg=new Image(); jobImg.src="job.png";
+
+/* ===== AUDIO ===== */
+const flapSound=new Audio("click.mp3");
+const dieSound=new Audio("die.mp3");
+let currentSound=null;
+
+/* ===== GAME VARS ===== */
+let bird,pipes,frame,score,gameOver=false;
+let easterEggTriggered=false;
+
+/* ===== CANVAS ===== */
+const canvas=game, ctx=canvas.getContext("2d");
+
+/* ===== GAME FLOW ===== */
 function startGame(){
-  const n = nameInput.value.trim();
+  const n=nameInput.value.trim();
   if(!n) return;
-  playerName = n;
-  localStorage.setItem("playerName", playerName);
-
-  const entry = leaderboard.find(e => e.name === playerName);
-  playerHighScore = entry ? entry.score : 0;
-
+  playerName=n;
+  const e=leaderboard.find(x=>x.name===n);
+  playerHighScore=e?e.score:0;
   resetGame();
   gameOverUI.style.display="none";
   show("game");
 }
 
-/* ========== LEADERBOARD ========== */
-function saveScore(){
-  const entry = leaderboard.find(e => e.name === playerName);
-  if(entry){
-    if(score > entry.score) entry.score = score;
-  } else {
-    leaderboard.push({ name: playerName, score });
-  }
-  leaderboard.sort((a,b)=>b.score-a.score);
-  leaderboard = leaderboard.slice(0,5);
-  localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
-  playerHighScore = Math.max(playerHighScore, score);
-}
-
-function renderLeaderboard(){
-  leaderboardList.innerHTML = leaderboard
-    .map((e,i)=>`<div>${i+1}. ${e.name} — ${e.score}</div>`)
-    .join("");
-}
-
-/* ========== GAME LOGIC ========== */
-const canvas = game, ctx = canvas.getContext("2d");
-const birdImg=new Image(); birdImg.src="bird.png";
-const pipeImg=new Image(); pipeImg.src="pillar.png";
-const deathImg=new Image(); deathImg.src="death.png";
-
-const flapSound=new Audio("click.mp3");
-const dieSound=new Audio("die.mp3");
-let currentSound=null;
-
-function playSound(s,force=false){
-  if(currentSound&&!force) return;
-  if(currentSound&&force) currentSound.pause();
-  currentSound=s; s.currentTime=0; s.play();
-  s.onended=()=>currentSound=null;
-}
-
-let bird,pipes,frame,score,gameOver=false;
-
-document.body.addEventListener("click",()=>{
-  if(!gameOver && screens.game.classList.contains("active")){
-    bird.velocity=bird.lift;
-    playSound(flapSound);
-  }
-});
-
 function resetGame(){
   bird={x:80,y:250,w:40,h:40,velocity:0,gravity:0.4,lift:-8,rotation:0};
-  pipes=[]; frame=0; score=0; gameOver=false;
+  pipes=[]; frame=0; score=0;
+  gameOver=false;
+  easterEggTriggered=false;
 }
 
 function restartGame(){
@@ -193,13 +251,48 @@ function restartGame(){
   gameOverUI.style.display="none";
 }
 
+/* ===== INPUT ===== */
+document.body.addEventListener("click",()=>{
+  if(!gameOver && screens.game.classList.contains("active")){
+    bird.velocity=bird.lift;
+    playSound(flapSound);
+  }
+});
+
+/* ===== AUDIO ===== */
+function playSound(s,f=false){
+  if(currentSound&&!f) return;
+  if(currentSound&&f) currentSound.pause();
+  currentSound=s; s.currentTime=0; s.play();
+  s.onended=()=>currentSound=null;
+}
+
+/* ===== PIPES ===== */
 function addPipe(){
   const gap=190, top=Math.random()*220+60;
   pipes.push({x:400,top,bottom:top+gap,w:60,passed:false});
 }
 
+/* ===== LEADERBOARD ===== */
+function saveScore(){
+  const e=leaderboard.find(x=>x.name===playerName);
+  if(e){ if(score>e.score) e.score=score; }
+  else leaderboard.push({name:playerName,score});
+  leaderboard.sort((a,b)=>b.score-a.score);
+  leaderboard=leaderboard.slice(0,5);
+  localStorage.setItem("leaderboard",JSON.stringify(leaderboard));
+  playerHighScore=Math.max(playerHighScore,score);
+}
+
+function renderLeaderboard(){
+  leaderboardList.innerHTML=leaderboard.map(
+    (e,i)=>`<div>${i+1}. ${e.name} — ${e.score}</div>`
+  ).join("");
+}
+
+/* ===== UPDATE ===== */
 function update(){
-  if(gameOver || !screens.game.classList.contains("active")) return;
+  if(gameOver||!screens.game.classList.contains("active")) return;
 
   bird.velocity+=bird.gravity;
   bird.velocity*=0.98;
@@ -211,16 +304,30 @@ function update(){
 
   pipes.forEach(p=>{
     p.x-=1.6;
+
+    if(!p.passed && p.x+p.w<bird.x){
+      score++; p.passed=true;
+
+      // 🥚 Easter Egg at score 5
+      if(score===5 && !easterEggTriggered){
+        easterEggTriggered=true;
+        gameOver=true;
+        playSound(dieSound,true);
+        saveScore();
+        gameOverUI.style.display="flex";
+      }
+    }
+
     if(bird.x<p.x+p.w&&bird.x+bird.w>p.x&&(bird.y<p.top||bird.y+bird.h>p.bottom)){
       gameOver=true;
       playSound(dieSound,true);
       saveScore();
       gameOverUI.style.display="flex";
     }
-    if(!p.passed&&p.x+p.w<bird.x){score++;p.passed=true;}
   });
 }
 
+/* ===== DRAW ===== */
 function draw(){
   if(!screens.game.classList.contains("active")) return;
   ctx.clearRect(0,0,400,600);
@@ -236,12 +343,15 @@ function draw(){
   ctx.drawImage(birdImg,-20,-20,40,40);
   ctx.restore();
 
-  // SCORE + HIGHSCORE (TOP LEFT)
-  ctx.fillStyle="white";
+  ctx.fillStyle="#fff";
   ctx.font="18px Arial";
-  ctx.fillText(`Score: ${score}  |  High: ${playerHighScore}`, 12, 24);
+  ctx.fillText(`Score: ${score} | High: ${playerHighScore}`,12,24);
 
-  if(gameOver) ctx.drawImage(deathImg,50,200,300,200);
+  if(easterEggTriggered){
+    ctx.drawImage(jobImg,40,120,320,360);
+  } else if(gameOver){
+    ctx.drawImage(deathImg,50,200,300,200);
+  }
 }
 
 function loop(){ update(); draw(); requestAnimationFrame(loop); }
