@@ -1,210 +1,249 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Flappy Bird</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>KPPXMODI</title>
 
 <style>
-  body {
-    margin: 0;
-    background: #70c5ce;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    touch-action: manipulation;
-    font-family: Arial, sans-serif;
-  }
-  canvas {
-    background: #70c5ce;
-  }
-  #github {
-    position: fixed;
-    bottom: 10px;
-    right: 10px;
-    color: white;
-    text-decoration: none;
-    font-size: 14px;
-  }
+* { box-sizing: border-box; font-family: Arial, sans-serif; }
+
+body {
+  margin: 0;
+  background: linear-gradient(135deg, #5dc7d8, #4aa3b3);
+  height: 100vh;
+  overflow: hidden;
+  color: white;
+}
+
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.95);
+  transition: 0.4s ease;
+}
+
+.screen.active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+}
+
+h1 {
+  font-size: 42px;
+  margin-bottom: 10px;
+}
+
+button {
+  padding: 14px 28px;
+  font-size: 18px;
+  border: none;
+  border-radius: 8px;
+  background: #ffcc00;
+  color: black;
+  cursor: pointer;
+}
+
+button:hover { transform: scale(1.05); }
+
+input {
+  padding: 12px;
+  font-size: 18px;
+  border-radius: 6px;
+  border: none;
+  width: 220px;
+}
+
+canvas {
+  background: #70c5ce;
+}
+
+#github {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  color: white;
+  text-decoration: none;
+  font-size: 14px;
+}
 </style>
 </head>
 
 <body>
 
-<canvas id="game" width="400" height="600"></canvas>
+<!-- ===== MENU ===== -->
+<div id="menu" class="screen active">
+  <h1>KPPXMODI</h1>
+  <button onclick="goName()">▶ Play</button>
+  <button onclick="goLeaderboard()">🏆 Leaderboard</button>
+</div>
+
+<!-- ===== NAME ===== -->
+<div id="nameScreen" class="screen">
+  <h1>Enter Name</h1>
+  <input id="nameInput" placeholder="Your name" />
+  <button onclick="startGame()">Start</button>
+</div>
+
+<!-- ===== LEADERBOARD ===== -->
+<div id="leaderboardScreen" class="screen">
+  <h1>Leaderboard</h1>
+  <div id="leaderboardList"></div>
+  <button onclick="goMenu()">⬅ Back</button>
+</div>
+
+<!-- ===== GAME ===== -->
+<div id="gameScreen" class="screen">
+  <canvas id="game" width="400" height="600"></canvas>
+  <button onclick="restartGame()">Restart</button>
+</div>
+
 <a id="github" href="https://github.com/SanjayButCodes" target="_blank">GitHub</a>
 
 <script>
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
-
-// ===== PLAYER NAME =====
-let playerName = localStorage.getItem("playerName");
-if (!playerName) {
-  playerName = prompt("Enter your name") || "Player";
-  localStorage.setItem("playerName", playerName);
-}
-
-// ===== LEADERBOARD =====
-let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
-
-// ===== IMAGES =====
-const birdImg = new Image(); birdImg.src = "bird.png";
-const pipeImg = new Image(); pipeImg.src = "pillar.png";
-const deathImg = new Image(); deathImg.src = "death.png";
-
-// ===== AUDIO =====
-const flapSound = new Audio("click.mp3");
-const dieSound  = new Audio("die.mp3");
-
-// Mobile unlock
-document.body.addEventListener("touchstart", () => {
-  flapSound.play().then(() => flapSound.pause());
-  dieSound.play().then(() => dieSound.pause());
-}, { once: true });
-
-// ===== AUDIO SYSTEM =====
-let currentSound = null;
-let restartPending = false;
-
-function playSound(sound, force=false) {
-  if (currentSound && !force) return;
-  if (currentSound && force) {
-    currentSound.pause();
-    currentSound.currentTime = 0;
-  }
-  currentSound = sound;
-  sound.currentTime = 0;
-  sound.play();
-  sound.onended = () => {
-    if (currentSound === sound) {
-      currentSound = null;
-      if (restartPending) location.reload();
-    }
-  };
-}
-
-// ===== GAME STATE =====
-let bird = {
-  x: 80, y: 250, w: 40, h: 40,
-  velocity: 0,
-  gravity: 0.4,
-  lift: -8,
-  rotation: 0
+/* ================= STATE ================= */
+let state = "menu";
+const screens = {
+  menu,
+  name: nameScreen,
+  leaderboard: leaderboardScreen,
+  game: gameScreen
 };
 
-let pipes = [];
-let frame = 0;
-let score = 0;
-let gameOver = false;
+function show(s) {
+  Object.values(screens).forEach(sc => sc.classList.remove("active"));
+  screens[s].classList.add("active");
+  state = s;
+}
 
-// ===== CONTROLS =====
-function flap() {
-  if (!gameOver) {
-    bird.velocity = bird.lift;
-    playSound(flapSound);
+/* ================= NAV ================= */
+function goMenu(){ show("menu"); }
+function goName(){ show("name"); }
+function goLeaderboard(){
+  renderLeaderboard();
+  show("leaderboard");
+}
+
+/* ================= NAME ================= */
+let playerName = localStorage.getItem("playerName") || "";
+
+function startGame(){
+  const input = nameInput.value.trim();
+  if(!input) return;
+  playerName = input;
+  localStorage.setItem("playerName", playerName);
+  resetGame();
+  show("game");
+}
+
+/* ================= LEADERBOARD ================= */
+let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
+
+function saveScore(score){
+  const existing = leaderboard.find(e => e.name === playerName);
+  if(existing){
+    if(score > existing.score) existing.score = score;
   } else {
-    if (currentSound === dieSound) restartPending = true;
-    else location.reload();
+    leaderboard.push({name: playerName, score});
   }
-}
-document.addEventListener("click", flap);
-document.addEventListener("keydown", e => e.code === "Space" && flap());
-
-// ===== PIPES =====
-function addPipe() {
-  const gap = 190;
-  const top = Math.random() * 220 + 60;
-  pipes.push({
-    x: canvas.width,
-    top,
-    bottom: top + gap,
-    w: 60,
-    passed: false
-  });
-}
-
-// ===== GAME LOGIC =====
-function update() {
-  if (gameOver) return;
-
-  bird.velocity += bird.gravity;
-  bird.velocity *= 0.98;
-  bird.y += bird.velocity;
-  bird.rotation = Math.min(Math.max(bird.velocity * 0.05, -0.5), 1);
-
-  if (frame % 110 === 0) addPipe();
-  frame++;
-
-  pipes.forEach(p => {
-    p.x -= 1.6;
-    if (
-      bird.x < p.x + p.w &&
-      bird.x + bird.w > p.x &&
-      (bird.y < p.top || bird.y + bird.h > p.bottom)
-    ) endGame();
-
-    if (!p.passed && p.x + p.w < bird.x) {
-      score++;
-      p.passed = true;
-    }
-  });
-
-  if (bird.y + bird.h > canvas.height || bird.y < 0) endGame();
-}
-
-function endGame() {
-  if (gameOver) return;
-  gameOver = true;
-  playSound(dieSound, true);
-  saveScore();
-}
-
-// ===== SAVE SCORE =====
-function saveScore() {
-  leaderboard.push({ name: playerName, score });
-  leaderboard.sort((a,b) => b.score - a.score);
+  leaderboard.sort((a,b)=>b.score-a.score);
   leaderboard = leaderboard.slice(0,5);
   localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
 }
 
-// ===== DRAW =====
-function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+function renderLeaderboard(){
+  leaderboardList.innerHTML = leaderboard
+    .map((e,i)=>`<div>${i+1}. ${e.name} — ${e.score}</div>`)
+    .join("");
+}
 
-  pipes.forEach(p => {
-    ctx.drawImage(pipeImg, p.x, 0, p.w, p.top);
-    ctx.drawImage(pipeImg, p.x, p.bottom, p.w, canvas.height);
+/* ================= GAME LOGIC ================= */
+const canvas = game;
+const ctx = canvas.getContext("2d");
+
+const birdImg = new Image(); birdImg.src = "bird.png";
+const pipeImg = new Image(); pipeImg.src = "pillar.png";
+const deathImg = new Image(); deathImg.src = "death.png";
+
+const flapSound = new Audio("click.mp3");
+const dieSound  = new Audio("die.mp3");
+
+let bird, pipes, frame, score, gameOver, currentSound=null;
+
+document.body.addEventListener("click", ()=> {
+  if(state!=="game" || gameOver) return;
+  bird.velocity = bird.lift;
+  playSound(flapSound);
+});
+
+function playSound(s,force=false){
+  if(currentSound && !force) return;
+  if(currentSound && force){ currentSound.pause(); }
+  currentSound = s;
+  s.currentTime=0; s.play();
+  s.onended=()=>currentSound=null;
+}
+
+function resetGame(){
+  bird={x:80,y:250,w:40,h:40,velocity:0,gravity:0.4,lift:-8,rotation:0};
+  pipes=[]; frame=0; score=0; gameOver=false;
+}
+
+function restartGame(){
+  if(currentSound===dieSound) return;
+  resetGame();
+}
+
+function addPipe(){
+  const gap=190, top=Math.random()*220+60;
+  pipes.push({x:400,top,bottom:top+gap,w:60,passed:false});
+}
+
+function update(){
+  if(state!=="game"||gameOver) return;
+  bird.velocity+=bird.gravity;
+  bird.velocity*=0.98;
+  bird.y+=bird.velocity;
+  bird.rotation=Math.min(Math.max(bird.velocity*0.05,-0.5),1);
+
+  if(frame%110===0) addPipe();
+  frame++;
+
+  pipes.forEach(p=>{
+    p.x-=1.6;
+    if(bird.x<p.x+p.w&&bird.x+bird.w>p.x&&(bird.y<p.top||bird.y+bird.h>p.bottom)){
+      gameOver=true;
+      playSound(dieSound,true);
+      saveScore(score);
+    }
+    if(!p.passed&&p.x+p.w<bird.x){ score++; p.passed=true; }
   });
+}
 
+function draw(){
+  if(state!=="game") return;
+  ctx.clearRect(0,0,400,600);
+  pipes.forEach(p=>{
+    ctx.drawImage(pipeImg,p.x,0,p.w,p.top);
+    ctx.drawImage(pipeImg,p.x,p.bottom,p.w,600);
+  });
   ctx.save();
-  ctx.translate(bird.x + bird.w/2, bird.y + bird.h/2);
+  ctx.translate(bird.x+20,bird.y+20);
   ctx.rotate(bird.rotation);
-  ctx.drawImage(birdImg, -bird.w/2, -bird.h/2, bird.w, bird.h);
+  ctx.drawImage(birdImg,-20,-20,40,40);
   ctx.restore();
-
-  ctx.fillStyle = "white";
-  ctx.font = "28px Arial";
-  ctx.fillText(score, 20, 40);
-
-  if (gameOver) {
-    ctx.drawImage(deathImg, 50, 180, 300, 200);
-    ctx.font = "18px Arial";
-    ctx.fillText("Leaderboard:", 130, 400);
-    leaderboard.forEach((e,i) => {
-      ctx.fillText(`${i+1}. ${e.name} - ${e.score}`, 110, 430 + i*22);
-    });
-    ctx.fillText("Tap to Restart", 130, 550);
-  }
+  ctx.fillText(score,20,40);
+  if(gameOver) ctx.drawImage(deathImg,50,200,300,200);
 }
 
-// ===== LOOP =====
-function loop() {
-  update();
-  draw();
-  requestAnimationFrame(loop);
-}
+function loop(){ update(); draw(); requestAnimationFrame(loop); }
 loop();
 </script>
 </body>
