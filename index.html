@@ -259,7 +259,7 @@ function renderLeaderboard(){
 
   leaderboardList.innerHTML=rows.map((e,i)=>`
     <div style="${i<4?'opacity:.85':'color:#00f7ff;font-weight:bold'}">
-      ${i+1}. ${e.name} — ${e.score}${i<4?' 🔒':''}
+      ${i+1}. ${e.name} — ${e.score}${i<4?' ':''}
     </div>
   `).join("")
 }
