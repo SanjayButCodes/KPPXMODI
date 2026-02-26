@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KPPXMODI</title>
 
 <style>
@@ -36,10 +36,7 @@ body {
   transform: scale(1);
 }
 
-h1 {
-  font-size: 42px;
-  margin-bottom: 10px;
-}
+h1 { font-size: 42px; }
 
 button {
   padding: 14px 28px;
@@ -50,7 +47,6 @@ button {
   color: black;
   cursor: pointer;
 }
-
 button:hover { transform: scale(1.05); }
 
 input {
@@ -61,9 +57,7 @@ input {
   width: 220px;
 }
 
-canvas {
-  background: #70c5ce;
-}
+canvas { background: #70c5ce; }
 
 #github {
   position: fixed;
@@ -78,17 +72,17 @@ canvas {
 
 <body>
 
-<!-- ===== MENU ===== -->
+<!-- ===== MAIN MENU ===== -->
 <div id="menu" class="screen active">
   <h1>KPPXMODI</h1>
   <button onclick="goName()">▶ Play</button>
   <button onclick="goLeaderboard()">🏆 Leaderboard</button>
 </div>
 
-<!-- ===== NAME ===== -->
+<!-- ===== NAME INPUT ===== -->
 <div id="nameScreen" class="screen">
   <h1>Enter Name</h1>
-  <input id="nameInput" placeholder="Your name" />
+  <input id="nameInput" placeholder="Your name">
   <button onclick="startGame()">Start</button>
 </div>
 
@@ -102,60 +96,58 @@ canvas {
 <!-- ===== GAME ===== -->
 <div id="gameScreen" class="screen">
   <canvas id="game" width="400" height="600"></canvas>
-  <button onclick="restartGame()">Restart</button>
+
+  <!-- GAME OVER OPTIONS -->
+  <div id="gameOverUI" style="display:none; gap:14px; flex-direction:column;">
+    <button onclick="restartGame()">🔁 Restart</button>
+    <button onclick="goMenu()">🏠 Main Menu</button>
+  </div>
 </div>
 
 <a id="github" href="https://github.com/SanjayButCodes" target="_blank">GitHub</a>
 
 <script>
-/* ================= STATE ================= */
-let state = "menu";
-const screens = {
-  menu,
-  name: nameScreen,
-  leaderboard: leaderboardScreen,
-  game: gameScreen
-};
-
-function show(s) {
-  Object.values(screens).forEach(sc => sc.classList.remove("active"));
+/* ========== STATE / NAV ========== */
+const screens = { menu, name:nameScreen, leaderboard:leaderboardScreen, game:gameScreen };
+function show(s){
+  Object.values(screens).forEach(sc=>sc.classList.remove("active"));
   screens[s].classList.add("active");
-  state = s;
 }
-
-/* ================= NAV ================= */
 function goMenu(){ show("menu"); }
 function goName(){ show("name"); }
-function goLeaderboard(){
-  renderLeaderboard();
-  show("leaderboard");
-}
+function goLeaderboard(){ renderLeaderboard(); show("leaderboard"); }
 
-/* ================= NAME ================= */
+/* ========== NAME & SCORES ========== */
 let playerName = localStorage.getItem("playerName") || "";
+let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
+let playerHighScore = 0;
 
 function startGame(){
-  const input = nameInput.value.trim();
-  if(!input) return;
-  playerName = input;
+  const n = nameInput.value.trim();
+  if(!n) return;
+  playerName = n;
   localStorage.setItem("playerName", playerName);
+
+  const entry = leaderboard.find(e => e.name === playerName);
+  playerHighScore = entry ? entry.score : 0;
+
   resetGame();
+  gameOverUI.style.display="none";
   show("game");
 }
 
-/* ================= LEADERBOARD ================= */
-let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
-
-function saveScore(score){
-  const existing = leaderboard.find(e => e.name === playerName);
-  if(existing){
-    if(score > existing.score) existing.score = score;
+/* ========== LEADERBOARD ========== */
+function saveScore(){
+  const entry = leaderboard.find(e => e.name === playerName);
+  if(entry){
+    if(score > entry.score) entry.score = score;
   } else {
-    leaderboard.push({name: playerName, score});
+    leaderboard.push({ name: playerName, score });
   }
   leaderboard.sort((a,b)=>b.score-a.score);
   leaderboard = leaderboard.slice(0,5);
   localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+  playerHighScore = Math.max(playerHighScore, score);
 }
 
 function renderLeaderboard(){
@@ -164,32 +156,31 @@ function renderLeaderboard(){
     .join("");
 }
 
-/* ================= GAME LOGIC ================= */
-const canvas = game;
-const ctx = canvas.getContext("2d");
+/* ========== GAME LOGIC ========== */
+const canvas = game, ctx = canvas.getContext("2d");
+const birdImg=new Image(); birdImg.src="bird.png";
+const pipeImg=new Image(); pipeImg.src="pillar.png";
+const deathImg=new Image(); deathImg.src="death.png";
 
-const birdImg = new Image(); birdImg.src = "bird.png";
-const pipeImg = new Image(); pipeImg.src = "pillar.png";
-const deathImg = new Image(); deathImg.src = "death.png";
-
-const flapSound = new Audio("click.mp3");
-const dieSound  = new Audio("die.mp3");
-
-let bird, pipes, frame, score, gameOver, currentSound=null;
-
-document.body.addEventListener("click", ()=> {
-  if(state!=="game" || gameOver) return;
-  bird.velocity = bird.lift;
-  playSound(flapSound);
-});
+const flapSound=new Audio("click.mp3");
+const dieSound=new Audio("die.mp3");
+let currentSound=null;
 
 function playSound(s,force=false){
-  if(currentSound && !force) return;
-  if(currentSound && force){ currentSound.pause(); }
-  currentSound = s;
-  s.currentTime=0; s.play();
+  if(currentSound&&!force) return;
+  if(currentSound&&force) currentSound.pause();
+  currentSound=s; s.currentTime=0; s.play();
   s.onended=()=>currentSound=null;
 }
+
+let bird,pipes,frame,score,gameOver=false;
+
+document.body.addEventListener("click",()=>{
+  if(!gameOver && screens.game.classList.contains("active")){
+    bird.velocity=bird.lift;
+    playSound(flapSound);
+  }
+});
 
 function resetGame(){
   bird={x:80,y:250,w:40,h:40,velocity:0,gravity:0.4,lift:-8,rotation:0};
@@ -199,6 +190,7 @@ function resetGame(){
 function restartGame(){
   if(currentSound===dieSound) return;
   resetGame();
+  gameOverUI.style.display="none";
 }
 
 function addPipe(){
@@ -207,7 +199,8 @@ function addPipe(){
 }
 
 function update(){
-  if(state!=="game"||gameOver) return;
+  if(gameOver || !screens.game.classList.contains("active")) return;
+
   bird.velocity+=bird.gravity;
   bird.velocity*=0.98;
   bird.y+=bird.velocity;
@@ -221,25 +214,33 @@ function update(){
     if(bird.x<p.x+p.w&&bird.x+bird.w>p.x&&(bird.y<p.top||bird.y+bird.h>p.bottom)){
       gameOver=true;
       playSound(dieSound,true);
-      saveScore(score);
+      saveScore();
+      gameOverUI.style.display="flex";
     }
-    if(!p.passed&&p.x+p.w<bird.x){ score++; p.passed=true; }
+    if(!p.passed&&p.x+p.w<bird.x){score++;p.passed=true;}
   });
 }
 
 function draw(){
-  if(state!=="game") return;
+  if(!screens.game.classList.contains("active")) return;
   ctx.clearRect(0,0,400,600);
+
   pipes.forEach(p=>{
     ctx.drawImage(pipeImg,p.x,0,p.w,p.top);
     ctx.drawImage(pipeImg,p.x,p.bottom,p.w,600);
   });
+
   ctx.save();
   ctx.translate(bird.x+20,bird.y+20);
   ctx.rotate(bird.rotation);
   ctx.drawImage(birdImg,-20,-20,40,40);
   ctx.restore();
-  ctx.fillText(score,20,40);
+
+  // SCORE + HIGHSCORE (TOP LEFT)
+  ctx.fillStyle="white";
+  ctx.font="18px Arial";
+  ctx.fillText(`Score: ${score}  |  High: ${playerHighScore}`, 12, 24);
+
   if(gameOver) ctx.drawImage(deathImg,50,200,300,200);
 }
 
